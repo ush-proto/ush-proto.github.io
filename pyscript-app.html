@@ -1,0 +1,537 @@
+<html>
+
+<head>
+  <title>USH - Analyse des marchés</title>
+  <meta charset="utf-8">
+  <link rel="icon" type="image/x-icon" href="./favicon.png">
+  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
+
+<body>
+
+  <div class="container-fluid">
+    <div class="row">
+      <h1>Analyse des marchés liés aux Organismes du logement social</h1>
+      <p class="lead">
+        Démonstrateur dans le cadre de l'étude USH
+      </p>
+    </div>
+  
+    <div class="row">
+      <div class="col-sm-4">
+        <select id="selection-famille" class="form-select" placeholder="Selection">
+          <option value="" disabled selected>Selectionnez une famille d'OLS...</option>
+        </select>
+      </div>
+      <div class="col-sm-4">
+        <select id="selection-type-perimetre" class="form-select" placeholder="Selection">
+          <option value="" disabled selected>Selectionnez un type de périmètre...</option>
+        </select>
+      </div>
+      <div class="col-sm-4">
+        <select id="selection-perimetre" class="form-select" placeholder="Selection">
+          <option value="" disabled selected>Selectionnez un périmètre...</option>
+        </select>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-sm-6">
+        <div class="card" style="min-height: 700px">
+          <div class="card-body" id="graphe1">
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card" style="min-height: 700px">
+          <div class="card-body" id="graphe2">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-sm-6">
+        <div class="card" style="min-height: 700px">
+          <div class="card-body" id="graphe3">
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card" style="min-height: 700px">
+          <div class="card-body" id="graphe4">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-sm-12">
+        <div class="card" style="min-height: 700px">
+          <div class="card-body" id="graphe5">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-sm-12">
+        <div class="card" style="min-height: 700px">
+          <div class="card-body" id="graphe6">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type='text/javascript'>
+        function plot(graph, chart) {
+            var figure = JSON.parse(graph)
+            Plotly.newPlot(chart, figure, {});
+        }
+   </script>
+  
+  <py-config type="toml">
+    packages = ["pandas", "plotly"]
+
+    [[fetch]]
+    files = ['indicateurs_OLS.sqlite3']
+  </py-config>
+
+  <py-script>
+
+    import js
+    from js import document
+    from pyodide import create_proxy
+    from pyscript import Element
+    
+    from plotly.io import to_html
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+    import plotly.express as px
+    import pandas as pd
+    import sqlite3
+
+    WIDTH_GRAPHE = document.getElementById("graphe1").offsetWidth - 50
+
+    bdd_result = "indicateurs_OLS.sqlite3"
+
+    conn_sqlite = sqlite3.connect(bdd_result)
+
+    ########################################################################
+    # FONCTIONS MISE EN PLACE DES PARAMETRES
+    ########################################################################
+
+    CATEGORIES = [
+        {"code": "P1", "valeur": "ETAT"},
+        {"code": "P2", "valeur": "REGION"},
+        {"code": "P3", "valeur": "DEPARTEMENT"},
+        {"code": "P4", "valeur": "INTERCOMMUNALITE"},
+        {"code": "P5", "valeur": "COMMUNE"},
+        {"code": "P6", "valeur": "COLLECTIVITE TERRITORIALE AUTRE"},
+        {"code": "P0", "valeur": "AUTRE PERSONNE MORALE PUBLIQUE"},
+        {"code": "F1", "valeur": "ORGANISME LOGEMENT SOCIAL"},
+        {"code": "F2", "valeur": "ETABLISSEMENT PUBLIC FONCIER"},
+        {"code": "A4", "valeur": "SAFER"},
+        {"code": "F4", "valeur": "SEM / SPLA"},
+        {"code": "F5", "valeur": "AMENAGEUR FONCIER"},
+        {"code": "F6", "valeur": "PROMOTEUR IMMOBILIER PRIVE"},
+        {"code": "F7", "valeur": "INVESTISSEUR PROFESSIONNEL"},
+        {"code": "A1", "valeur": "STRUCTURE AGRICOLE"},
+        {"code": "A2", "valeur": "STRUCTURE FORESTIERE"},
+        {"code": "A3", "valeur": "STRUCTURE DU FONCIER ENVIRONNEMENTALE"},
+        {"code": "R1", "valeur": "CONCESSIONNAIRE AUTOROUTIER"},
+        {"code": "R2", "valeur": "RESEAU FERRE"},
+        {"code": "R3", "valeur": "STRUCTURE AERIENNE"},
+        {"code": "R4", "valeur": "STRUCTURE FLUVIALE OU MARITIME"},
+        {"code": "R5", "valeur": "RESEAU ELECTRIQUE OU GAZ"},
+        {"code": "R0", "valeur": "PROPRIETAIRE DE RESEAU AUTRE"},
+        {"code": "M0", "valeur": "AUTRE PERSONNE MORALE"},
+        {"code": "X0", "valeur": "PERSONNE PHYSIQUE"},
+        {"code": "R6", "valeur": "RESEAU EAU OU ASSAINISSEMENT"},
+        {"code": "R7", "valeur": "RESEAU DE TELECOMMUNICATION"},
+        {"code": "G1", "valeur": "SOCIETE CIVILE IMMOBILIERE"},
+        {"code": "G2", "valeur": "PROPRIETE DIVISEE EN LOT"},
+        {"code": None, "valeur": "INCONNU"},
+    ]
+
+
+    def nom(categorie):
+        for elt in CATEGORIES:
+            if elt["code"] == categorie:
+                return elt["valeur"]
+        return categorie
+
+
+    def get_type_perimetre():
+        types =  {
+            "Principales métropoles": "epci",
+            "Regions": "region",
+            "Zonage ABC": "zonage_ABC",
+            "Zonage 123 ": "zonage_123",
+        }
+        selector = document.getElementById("selection-type-perimetre") 
+        for nom, code in types.items():
+            opt = document.createElement("option")
+            opt.innerHTML = nom
+            opt.value = code
+            selector.appendChild(opt)
+
+    def get_typo_ush():
+        df = pd.read_sql_query(
+            f"""
+    SELECT DISTINCT typo_ush FROM result; 
+        """,
+            con=conn_sqlite,
+        )
+        return df["typo_ush"].to_list()
+
+
+    def get_famille_ols():
+        df = pd.read_sql_query(
+            f"""
+    SELECT DISTINCT famille FROM result; 
+        """,
+            con=conn_sqlite,
+        )
+        familles = df["famille"].to_list()
+        selector = document.getElementById("selection-famille") 
+        for nom in familles:
+            opt = document.createElement("option")
+            opt.innerHTML = nom
+            opt.value = nom
+            selector.appendChild(opt)
+
+
+    def get_perimetre(type_perimetre):
+        df = pd.read_sql_query(
+            f"""
+    SELECT DISTINCT perimetre FROM result WHERE type_perimetre='{type_perimetre}'; 
+        """,
+            con=conn_sqlite,
+        )
+        perimetres = df["perimetre"].to_list()
+        selector = document.getElementById("selection-perimetre") 
+        selector.innerHTML = ""
+        for nom in perimetres:
+            opt = document.createElement("option")
+            opt.innerHTML = nom
+            opt.value = nom
+            selector.appendChild(opt)
+
+    ########################################################################
+    # FONCTIONS GRAPHIQUES
+    ########################################################################
+
+
+    def achats_ols(type_perimetre, famille):
+
+        resultat = pd.read_sql_query(
+            f"""
+    SELECT typo_ush, 
+        perimetre,
+        montant_transaction_acheteur
+    FROM result
+    WHERE type_perimetre = '{type_perimetre}'
+        AND famille = '{famille}';""",
+            con=conn_sqlite,
+        )
+        titre = "Type de biens achetés par les organismes du logement social selon la région (période 2010-2020)"
+        resultat = resultat.pivot(
+            index="perimetre", columns="typo_ush", values="montant_transaction_acheteur"
+        )
+        resultat = resultat.reset_index()
+        fig = px.bar(
+            resultat,
+            x="perimetre",
+            y=resultat.columns,
+            color_discrete_sequence=px.colors.qualitative.Alphabet,
+            labels={
+                "perimetre": "Périmètres",
+                "value": "Montant de transactions (M€)",
+                "typo_ush": "Typologie",
+            },
+            title=titre,
+        )
+        fig.update_layout(
+          width=WIDTH_GRAPHE,
+        )
+        return resultat, fig
+        
+    def proportion_achats_ols(type_perimetre, famille):
+
+        resultat = pd.read_sql_query(
+            f"""
+      SELECT typo_ush, 
+          perimetre,
+          montant_transaction_acheteur
+      FROM result
+      WHERE type_perimetre = '{type_perimetre}'
+          AND famille = '{famille}';""",
+            con=conn_sqlite,
+        )
+        titre = "Proportion des biens achetés par les organismes du logement social selon la région (période 2010-2020)"
+        resultat = resultat.pivot(
+            index="perimetre", columns="typo_ush", values="montant_transaction_acheteur"
+        )
+        resultat = resultat.reset_index()
+        resultat["total"] = resultat.sum(axis=1, numeric_only=True)
+
+        for c in resultat.columns:
+            if c not in ("perimetre",):
+                resultat[c] = resultat[c] * 100.0 / resultat["total"]
+
+        resultat.drop(columns=["total"], inplace=True)
+        fig = px.bar(
+            resultat,
+            x="perimetre",
+            y=resultat.columns,
+            color_discrete_sequence=px.colors.qualitative.Alphabet,
+            labels={
+                "perimetre": "Périmètres",
+                "value": "Part du montant total (%)",
+                "typo_ush": "Typologie",
+            },
+            title=titre,
+        )
+        fig.update_layout(
+          width=WIDTH_GRAPHE,
+        )
+        return resultat, fig
+
+    def ventes_ols(type_perimetre, famille):
+
+        resultat = pd.read_sql_query(
+            f"""
+      SELECT typo_ush, 
+          perimetre,
+          montant_transaction_vendeur
+      FROM result
+      WHERE type_perimetre = '{type_perimetre}'
+          AND famille = '{famille}';""",
+            con=conn_sqlite,
+        )
+        titre = "Type de biens vendus par les organismes du logement social selon la région (période 2010-2020)"
+        resultat = resultat.pivot(
+            index="perimetre", columns="typo_ush", values="montant_transaction_vendeur"
+        )
+        resultat = resultat.reset_index()
+        fig = px.bar(
+            resultat,
+            x="perimetre",
+            y=resultat.columns,
+            color_discrete_sequence=px.colors.qualitative.Alphabet,
+            labels={
+                "perimetre": "Périmètres",
+                "value": "Montant de transactions (M€)",
+                "typo_ush": "Typologie",
+            },
+            title=titre,
+        )
+        fig.update_layout(
+          width=WIDTH_GRAPHE,
+        )
+        return resultat, fig
+
+
+    def proportion_ventes_ols(type_perimetre, famille):
+
+        resultat = pd.read_sql_query(
+            f"""
+      SELECT typo_ush, 
+          perimetre,
+          montant_transaction_vendeur
+      FROM result
+      WHERE type_perimetre = '{type_perimetre}'
+          AND famille = '{famille}';""",
+            con=conn_sqlite,
+        )
+        titre = "Proportion de biens vendus par les organismes du logement social selon la région (période 2010-2020)"
+        resultat = resultat.pivot(
+            index="perimetre", columns="typo_ush", values="montant_transaction_vendeur"
+        )
+        resultat = resultat.reset_index()
+        resultat["total"] = resultat.sum(axis=1, numeric_only=True)
+
+        for c in resultat.columns:
+            if c not in ("perimetre",):
+                resultat[c] = resultat[c] * 100.0 / resultat["total"]
+
+        resultat.drop(columns=["total"], inplace=True)
+        fig = px.bar(
+            resultat,
+            x="perimetre",
+            y=resultat.columns,
+            color_discrete_sequence=px.colors.qualitative.Alphabet,
+            labels={
+                "perimetre": "Périmètres",
+                "value": "Part du montant total (%)",
+                "typo_ush": "Typologie",
+            },
+            title=titre,
+        )
+        fig.update_layout(
+          width=WIDTH_GRAPHE,
+        )
+        return resultat, fig
+
+    def montant_achat_vente(perimetre, famille):
+        resultat = pd.read_sql_query(
+            f"""
+      SELECT typo_ush, 
+          montant_transaction_vendeur, 
+          montant_transaction_acheteur 
+      FROM result
+      WHERE perimetre = "{perimetre}"
+          AND famille = "{famille}"
+      ORDER BY (montant_transaction_acheteur - montant_transaction_vendeur) DESC; 
+          """,
+            con=conn_sqlite,
+        )
+        titre = "Montant des transactions impliquant un OLS (période 2010-2020)"
+        fig = make_subplots(
+            specs=[[{"secondary_y": True}]],
+        )
+        fig.add_trace(
+            go.Bar(
+                x=resultat["typo_ush"],
+                y=resultat["montant_transaction_vendeur"],
+                offsetgroup=1,
+                name="Ventes par un OLS (M€)",
+                marker_color="rgb(55, 83, 109)",
+            ),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Bar(
+                x=resultat["typo_ush"],
+                y=resultat["montant_transaction_acheteur"],
+                offsetgroup=2,
+                name="Achats par un OLS (M€)",
+                marker_color="rgb(26, 118, 255)",
+            ),
+            secondary_y=False,
+        )
+        fig.update_layout(
+            barmode="group", yaxis={"title": "Montant (M€)"}, title=titre, width=WIDTH_GRAPHE*2
+        )
+        return resultat, fig
+
+    def part_achat_vente(perimetre, famille):
+        resultat = pd.read_sql_query(
+            f"""
+      SELECT typo_ush, 
+          proportion_montant_vendeur, 
+          proportion_montant_acheteur 
+      FROM result
+      WHERE perimetre = "{perimetre}"
+          AND famille = "{famille}"
+      ORDER BY typo_ush; 
+          """,
+            con=conn_sqlite,
+        )
+        titre = "Part du montant des transactions impliquant un OLS par segment de marché (période 2010-2020)"
+        fig = make_subplots(
+            specs=[[{"secondary_y": True}]],
+        )
+        fig.add_trace(
+            go.Bar(
+                x=resultat["typo_ush"],
+                y=resultat["proportion_montant_vendeur"],
+                offsetgroup=1,
+                name="Part des ventes",
+                marker_color="rgb(55, 83, 109)",
+            ),
+            secondary_y=False,
+        )
+        fig.add_trace(
+            go.Bar(
+                x=resultat["typo_ush"],
+                y=resultat["proportion_montant_acheteur"],
+                offsetgroup=2,
+                name="Part des achats",
+                marker_color="rgb(26, 118, 255)",
+            ),
+            secondary_y=False,
+        )
+        fig.update_layout(
+            barmode="group",
+            yaxis={"title": "Pourcentage", "range": [0, 100]},
+            title=titre,
+            width=WIDTH_GRAPHE*2,
+        )
+        return resultat, fig
+
+    ########################################################################
+    # INTERACTIONS
+    ########################################################################
+    
+    famille = "Tout OLS"
+    type_perimetre = "Regions"
+    perimetre = "National"
+
+    def selection_type_perimetre(event):
+        global type_perimetre
+        type_perimetre = document.getElementById("selection-type-perimetre").value
+        get_perimetre(type_perimetre)
+        update_graph()
+
+    def selection_famille(event):
+        global famille
+        famille = document.getElementById("selection-famille").value
+        update_graph()
+
+    def selection_perimetre(event):
+        global perimetre
+        perimetre = document.getElementById("selection-perimetre").value
+        update_graph()
+
+    def setup():
+        change_type_perimetre = create_proxy(selection_type_perimetre)
+        event_type_perimetre = document.getElementById("selection-type-perimetre")
+        event_type_perimetre.addEventListener("change", change_type_perimetre)
+        change_famille = create_proxy(selection_famille)
+        event_famille = document.getElementById("selection-famille")
+        event_famille.addEventListener("change", change_famille)
+        change_perimetre = create_proxy(selection_perimetre)
+        event_perimetre = document.getElementById("selection-perimetre")
+        event_perimetre.addEventListener("change", change_perimetre)
+
+    def update_graph():
+        resultat, fig = achats_ols(type_perimetre, famille)
+        graphe1 = Element("graphe1")
+        graphe1.clear()
+        js.plot(fig.to_json(), "graphe1")
+        resultat, fig = proportion_achats_ols(type_perimetre, famille)
+        graphe2 = Element("graphe2")
+        graphe2.clear()
+        js.plot(fig.to_json(), "graphe2")
+        resultat, fig = ventes_ols(type_perimetre, famille)
+        graphe3 = Element("graphe3")
+        graphe3.clear()
+        js.plot(fig.to_json(), "graphe3")
+        resultat, fig = proportion_ventes_ols(type_perimetre, famille)
+        graphe4 = Element("graphe4")
+        graphe4.clear()
+        js.plot(fig.to_json(), "graphe4")
+        resultat, fig = montant_achat_vente(perimetre, famille)
+        graphe5 = Element("graphe5")
+        graphe5.clear()
+        js.plot(fig.to_json(), "graphe5")
+        resultat, fig = part_achat_vente(perimetre, famille)
+        graphe6 = Element("graphe6")
+        graphe6.clear()
+        js.plot(fig.to_json(), "graphe6")
+
+    get_type_perimetre()
+    get_famille_ols()
+    get_perimetre(type_perimetre)
+    setup()
+
+  </py-script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8"
+    crossorigin="anonymous"></script>
+
+</body>
+
+</html>
