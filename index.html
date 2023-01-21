@@ -19,31 +19,36 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         
       </ul>
-        <button class="btn btn-outline-success"type="button" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu">Menu</button>
+        <button class="btn btn-outline-success"type="button" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu">Sélection</button>
     </div>
   </div>
 </nav>
 
 <div class="offcanvas offcanvas-top" tabindex="-1" id="menu" aria-labelledby="offcanvasLabel">
   <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Offcanvas</h5>
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Sélection</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   <div class="offcanvas-body">
     <div class="row">
-      <div class="col-sm-4">
+      <div class="col-sm-3">
         <select id="selection-famille" class="form-select" placeholder="Selection">
           <option value="" disabled selected>Selectionnez une famille d'OLS...</option>
         </select>
       </div>
-      <div class="col-sm-4">
+      <div class="col-sm-3">
         <select id="selection-type-perimetre" class="form-select" placeholder="Selection">
           <option value="" disabled selected>Selectionnez un type de périmètre...</option>
         </select>
       </div>
-      <div class="col-sm-4">
+      <div class="col-sm-3">
         <select id="selection-perimetre" class="form-select" placeholder="Selection">
           <option value="" disabled selected>Selectionnez un périmètre...</option>
+        </select>
+      </div>
+      <div class="col-sm-3">
+        <select id="selection-typologie" class="form-select" placeholder="Selection">
+          <option value="" disabled selected>Selectionnez une typologie...</option>
         </select>
       </div>
     </div>
@@ -187,8 +192,8 @@
 
     def get_type_perimetre():
         types =  {
-            "Principales métropoles": "epci",
             "Regions": "region",
+            "Principales métropoles": "epci",
             "Zonage ABC": "zonage_ABC",
             "Zonage 123 ": "zonage_123",
         }
@@ -197,6 +202,8 @@
             opt = document.createElement("option")
             opt.innerHTML = nom
             opt.value = code
+            if nom == "Zonage 123":
+              opt.add_class("selected")
             selector.appendChild(opt)
 
     def get_typo_ush():
@@ -206,7 +213,13 @@
         """,
             con=conn_sqlite,
         )
-        return df["typo_ush"].to_list()
+        selector = document.getElementById("selection-typologie") 
+        typos = df["typo_ush"].to_list()
+        for nom in typos:
+            opt = document.createElement("option")
+            opt.innerHTML = nom
+            opt.value = nom
+            selector.appendChild(opt)
 
 
     def get_famille_ols():
@@ -540,6 +553,7 @@
     famille = "Tout OLS"
     type_perimetre = "Regions"
     perimetre = "National"
+    typo = "Foncier Nu"
 
     def selection_type_perimetre(event):
         global type_perimetre
@@ -555,6 +569,11 @@
     def selection_perimetre(event):
         global perimetre
         perimetre = document.getElementById("selection-perimetre").value
+        update_graph()
+
+    def selection_typo(event):
+        global perimetre
+        perimetre = document.getElementById("selection-typo").value
         update_graph()
 
     def setup():
@@ -601,6 +620,7 @@
     get_type_perimetre()
     get_famille_ols()
     get_perimetre(type_perimetre)
+    get_typo_ush()
     setup()
 
   </py-script>
