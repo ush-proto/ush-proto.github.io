@@ -11,16 +11,25 @@
   <script defer src="https://pyscript.net/latest/pyscript.js"></script>
 </head>
 
-<body>
-
+<body style="padding-top: 100px;">
+<nav class="navbar navbar-expand-lg fixed-top" style="background-color: #e3f2fd;">
   <div class="container-fluid">
-    <div class="row">
-      <h1>Analyse des marchés liés aux Organismes du logement social</h1>
-      <p class="lead">
-        Démonstrateur dans le cadre de l'étude USH
-      </p>
+    <a class="navbar-brand" href="#">Démonstrateur USH - Analyse des marchés impliquant les organismes du logement social</a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        
+      </ul>
+        <button class="btn btn-outline-success"type="button" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu">Menu</button>
     </div>
-  
+  </div>
+</nav>
+
+<div class="offcanvas offcanvas-top" tabindex="-1" id="menu" aria-labelledby="offcanvasLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasExampleLabel">Offcanvas</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
     <div class="row">
       <div class="col-sm-4">
         <select id="selection-famille" class="form-select" placeholder="Selection">
@@ -38,6 +47,11 @@
         </select>
       </div>
     </div>
+  </div>
+</div>
+
+  <div class="container-fluid">
+  
     <div class="row mt-2">
       <div class="col-sm-6">
         <div class="card" style="min-height: 700px">
@@ -78,6 +92,14 @@
       <div class="col-sm-12">
         <div class="card" style="min-height: 700px">
           <div class="card-body" id="graphe6">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-sm-12">
+        <div class="card" style="min-height: 700px">
+          <div class="card-body" id="graphe7">
           </div>
         </div>
       </div>
@@ -147,6 +169,7 @@
         {"code": "R0", "valeur": "PROPRIETAIRE DE RESEAU AUTRE"},
         {"code": "M0", "valeur": "AUTRE PERSONNE MORALE"},
         {"code": "X0", "valeur": "PERSONNE PHYSIQUE"},
+        {"code": "X1", "valeur": "PERSONNE PHYSIQUE"},
         {"code": "R6", "valeur": "RESEAU EAU OU ASSAINISSEMENT"},
         {"code": "R7", "valeur": "RESEAU DE TELECOMMUNICATION"},
         {"code": "G1", "valeur": "SOCIETE CIVILE IMMOBILIERE"},
@@ -461,6 +484,55 @@
         )
         return resultat, fig
 
+    def transform_sankey(perimetre, famille, typo):
+        resultat = pd.read_sql_query(
+            f"""
+      SELECT codtypprov_ush, 
+            codtypproa_ush, 
+            montant_transaction 
+      FROM flux
+      WHERE perimetre = "{perimetre}"
+          AND famille = "{famille}"
+          AND typo_ush = "{typo}"
+          """,
+            con=conn_sqlite,
+        )
+        categories = list(
+            set(resultat["codtypprov_ush"].to_list() + resultat["codtypproa_ush"].to_list())
+        )
+        source = resultat["codtypprov_ush"].apply(lambda x: categories.index(x)).to_list()
+        target = resultat["codtypproa_ush"].apply(lambda x: categories.index(x)).to_list()
+        value = (
+            resultat["montant_transaction"].apply(lambda x: round(x / 1000000.0)).to_list()
+        )
+        colors = px.colors.qualitative.Bold
+        fig = go.Figure(
+            data=[
+                go.Sankey(
+                    orientation="h",
+                    valueformat=".0f",
+                    node=dict(
+                        pad=35,
+                        thickness=25,
+                        line=dict(color="black", width=0.5),
+                        label=[nom(c) for c in categories],
+                        color=[c for c in colors],
+                    ),
+                    link=dict(
+                        source=source,
+                        target=target,
+                        value=value,
+                        color=[colors[i] for i in source],
+                    ),
+                )
+            ]
+        )
+        fig.update_layout(
+            font=dict(size=12),
+            title="Principaux flux de transaction entre acteurs - période 2010-2020",
+            width= WIDTH_GRAPHE*2,
+        )
+        return resultat, fig
     ########################################################################
     # INTERACTIONS
     ########################################################################
@@ -521,6 +593,10 @@
         graphe6 = Element("graphe6")
         graphe6.clear()
         js.plot(fig.to_json(), "graphe6")
+        resultat, fig = transform_sankey(perimetre, famille, "Foncier Nu")
+        graphe7 = Element("graphe7")
+        graphe7.clear()
+        js.plot(fig.to_json(), "graphe7")
 
     get_type_perimetre()
     get_famille_ols()
