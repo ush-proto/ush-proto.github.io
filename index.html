@@ -24,33 +24,40 @@
   </div>
 </nav>
 
-<div class="offcanvas offcanvas-top" tabindex="-1" id="menu" aria-labelledby="offcanvasLabel">
+<div class="offcanvas offcanvas-end" tabindex="-1" id="menu" aria-labelledby="offcanvasLabel">
   <div class="offcanvas-header">
     <h5 class="offcanvas-title" id="offcanvasExampleLabel">Sélection</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
   <div class="offcanvas-body">
     <div class="row">
-      <div class="col-sm-3">
+      <div class="col-sm-12">
         <select id="selection-famille" class="form-select" placeholder="Selection">
           <option value="" disabled selected>Selectionnez une famille d'OLS...</option>
         </select>
       </div>
-      <div class="col-sm-3">
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
         <select id="selection-type-perimetre" class="form-select" placeholder="Selection">
           <option value="" disabled selected>Selectionnez un type de périmètre...</option>
         </select>
       </div>
-      <div class="col-sm-3">
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
         <select id="selection-perimetre" class="form-select" placeholder="Selection">
           <option value="" disabled selected>Selectionnez un périmètre...</option>
         </select>
       </div>
-      <div class="col-sm-3">
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
         <select id="selection-typologie" class="form-select" placeholder="Selection">
           <option value="" disabled selected>Selectionnez une typologie...</option>
         </select>
       </div>
+    </div>
     </div>
   </div>
 </div>
@@ -148,6 +155,17 @@
     # FONCTIONS MISE EN PLACE DES PARAMETRES
     ########################################################################
 
+    TYPES =  {
+        "Regions": "region",
+        "Principales métropoles": "epci",
+        "Zonage ABC": "zonage_ABC",
+        "Zonage 123 ": "zonage_123",
+    }
+    famille = "Tout OLS"
+    type_perimetre = "region"
+    perimetre = None 
+    typo = "Foncier Nu"
+
     CATEGORIES = [
         {"code": "P1", "valeur": "ETAT"},
         {"code": "P2", "valeur": "REGION"},
@@ -191,19 +209,13 @@
 
 
     def get_type_perimetre():
-        types =  {
-            "Regions": "region",
-            "Principales métropoles": "epci",
-            "Zonage ABC": "zonage_ABC",
-            "Zonage 123 ": "zonage_123",
-        }
         selector = document.getElementById("selection-type-perimetre") 
-        for nom, code in types.items():
+        for nom, code in TYPES.items():
             opt = document.createElement("option")
             opt.innerHTML = nom
             opt.value = code
-            if nom == "Zonage 123":
-              opt.add_class("selected")
+            if code == type_perimetre:
+              opt.selected = True
             selector.appendChild(opt)
 
     def get_typo_ush():
@@ -219,6 +231,8 @@
             opt = document.createElement("option")
             opt.innerHTML = nom
             opt.value = nom
+            if nom == typo:
+              opt.selected = True
             selector.appendChild(opt)
 
 
@@ -235,10 +249,13 @@
             opt = document.createElement("option")
             opt.innerHTML = nom
             opt.value = nom
+            if nom == famille:
+              opt.selected = True
             selector.appendChild(opt)
 
 
     def get_perimetre(type_perimetre):
+        global perimetre
         df = pd.read_sql_query(
             f"""
     SELECT DISTINCT perimetre FROM result WHERE type_perimetre='{type_perimetre}'; 
@@ -246,12 +263,15 @@
             con=conn_sqlite,
         )
         perimetres = df["perimetre"].to_list()
+        perimetre = perimetres[0]
         selector = document.getElementById("selection-perimetre") 
         selector.innerHTML = ""
         for nom in perimetres:
             opt = document.createElement("option")
             opt.innerHTML = nom
             opt.value = nom
+            if nom == perimetre:
+              opt.selected = True
             selector.appendChild(opt)
 
     ########################################################################
@@ -550,10 +570,7 @@
     # INTERACTIONS
     ########################################################################
     
-    famille = "Tout OLS"
-    type_perimetre = "Regions"
-    perimetre = "National"
-    typo = "Foncier Nu"
+
 
     def selection_type_perimetre(event):
         global type_perimetre
@@ -572,8 +589,8 @@
         update_graph()
 
     def selection_typo(event):
-        global perimetre
-        perimetre = document.getElementById("selection-typo").value
+        global typo
+        typo = document.getElementById("selection-typologie").value
         update_graph()
 
     def setup():
@@ -586,6 +603,9 @@
         change_perimetre = create_proxy(selection_perimetre)
         event_perimetre = document.getElementById("selection-perimetre")
         event_perimetre.addEventListener("change", change_perimetre)
+        change_typologie = create_proxy(selection_typo)
+        event_typologie = document.getElementById("selection-typologie")
+        event_typologie.addEventListener("change", change_typologie)
 
     def update_graph():
         resultat, fig = achats_ols(type_perimetre, famille)
@@ -612,7 +632,7 @@
         graphe6 = Element("graphe6")
         graphe6.clear()
         js.plot(fig.to_json(), "graphe6")
-        resultat, fig = transform_sankey(perimetre, famille, "Foncier Nu")
+        resultat, fig = transform_sankey(perimetre, famille, typo)
         graphe7 = Element("graphe7")
         graphe7.clear()
         js.plot(fig.to_json(), "graphe7")
@@ -622,6 +642,7 @@
     get_perimetre(type_perimetre)
     get_typo_ush()
     setup()
+    update_graph()
 
   </py-script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
