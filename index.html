@@ -32,97 +32,139 @@
   <div class="offcanvas-body">
     <div class="row">
       <div class="col-sm-12">
-        <select id="selection-famille" class="form-select" placeholder="Selection">
-          <option value="" disabled selected>Selectionnez une famille d'OLS...</option>
-        </select>
+        <div class="input-group mb-3">
+          <div class="form-floating">
+            <select id="selection-famille" class="form-select" placeholder="Selection">
+              <option value="" disabled selected>Selectionnez une famille d'OLS...</option>
+            </select>
+            <label for="selection-type-perimetre">Famille d'OLS</label>
+          </div>
+        </div>
       </div>
     </div>
     <div class="row">
       <div class="col-sm-12">
-        <select id="selection-type-perimetre" class="form-select" placeholder="Selection">
-          <option value="" disabled selected>Selectionnez un type de périmètre...</option>
-        </select>
+        <div class="input-group mb-3">
+          <div class="form-floating">
+            <select id="selection-type-perimetre" class="form-select" placeholder="Selection">
+              <option value="" disabled selected>Selectionnez un type de périmètre...</option>
+            </select>
+            <label for="selection-type-perimetre">Type de périmètre</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="input-group mb-3">
+            <div class="form-floating">
+              <select id="selection-perimetre" class="form-select" placeholder="Selection">
+                <option value="" disabled selected>Selectionnez un périmètre...</option>
+              </select>
+              <label for="selection-perimetre">Périmètre</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="input-group mb-3">
+            <div class="form-floating">
+              <select id="selection-typologie" class="form-select" placeholder="Selection">
+                <option value="" disabled selected>Selectionnez une typologie...</option>
+              </select>
+              <label for="selection-typologie">Type de biens</label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-sm-12">
-        <select id="selection-perimetre" class="form-select" placeholder="Selection">
-          <option value="" disabled selected>Selectionnez un périmètre...</option>
-        </select>
+  </div>
+</div>
+
+
+
+
+<div class="container-fluid">
+
+  <ul class="nav nav-tabs" id="tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="analyse1-tab" data-bs-toggle="tab" data-bs-target="#analyse1" type="button"
+        role="tab" aria-controls="analyse1" aria-selected="true">Type périmètre</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="analyse2-tab" data-bs-toggle="tab" data-bs-target="#analyse2" type="button"
+        role="tab" aria-controls="analyse2" aria-selected="false">Périmètre</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="analyse3-tab" data-bs-toggle="tab" data-bs-target="#analyse3" type="button"
+        role="tab" aria-controls="analyse3" aria-selected="false">Type de bien</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="analyse1" role="tabpanel" aria-labelledby="analyse1-tab" tabindex="0">
+      <h4 class="mt-3" id="title-type-perimetre"></h4><hr/>
+      <div class="row mt-2">
+        <div class="col-sm-6">
+          <div class="card" style="min-height: 700px">
+            <div class="card-body" id="graphe1">
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="card" style="min-height: 700px">
+            <div class="card-body" id="graphe2">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-sm-6">
+          <div class="card" style="min-height: 700px">
+            <div class="card-body" id="graphe3">
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="card" style="min-height: 700px">
+            <div class="card-body" id="graphe4">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-sm-12">
-        <select id="selection-typologie" class="form-select" placeholder="Selection">
-          <option value="" disabled selected>Selectionnez une typologie...</option>
-        </select>
+    <div class="tab-pane fade show active" id="analyse2" role="tabpanel" aria-labelledby="analyse2-tab" tabindex="0">
+      <h4 class="mt-3" id="title-perimetre"></h4><hr/>
+      <div class="row mt-2">
+        <div class="col-sm-12">
+          <div class="card" style="min-height: 700px">
+            <div class="card-body" id="graphe5">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-sm-12">
+          <div class="card" style="min-height: 700px">
+            <div class="card-body" id="graphe6">
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+    <div class="tab-pane fade show active" id="analyse3" role="tabpanel" aria-labelledby="analyse3-tab" tabindex="0">
+      <h4 class="mt-3" id="title-typo"></h4><hr/>
+      <div class="row mt-2">
+        <div class="col-sm-12">
+          <div class="card" style="min-height: 700px">
+            <div class="card-body" id="graphe7">
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-
-  <div class="container-fluid">
-  
-    <h3 class="mt-2">Analyse pour le type de périmètre</h3>
-    <hr/>
-    <div class="row mt-2">
-      <div class="col-sm-6">
-        <div class="card" style="min-height: 700px">
-          <div class="card-body" id="graphe1">
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6">
-        <div class="card" style="min-height: 700px">
-          <div class="card-body" id="graphe2">
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="row mt-2">
-      <div class="col-sm-6">
-        <div class="card" style="min-height: 700px">
-          <div class="card-body" id="graphe3">
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6">
-        <div class="card" style="min-height: 700px">
-          <div class="card-body" id="graphe4">
-          </div>
-        </div>
-      </div>
-    </div>
-    <h3 class="mt-2">Analyse pour le périmètre</h3>
-    <hr/>
-    <div class="row mt-2">
-      <div class="col-sm-12">
-        <div class="card" style="min-height: 700px">
-          <div class="card-body" id="graphe5">
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="row mt-2">
-      <div class="col-sm-12">
-        <div class="card" style="min-height: 700px">
-          <div class="card-body" id="graphe6">
-          </div>
-        </div>
-      </div>
-    </div>
-    <h3 class="mt-2">Analyse pour le segment de marché</h3>
-    <hr/>
-    <div class="row mt-2">
-      <div class="col-sm-12">
-        <div class="card" style="min-height: 700px">
-          <div class="card-body" id="graphe7">
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
   <script type='text/javascript'>
         function plot(graph, chart) {
             var figure = JSON.parse(graph)
@@ -167,6 +209,7 @@
         "Zonage ABC": "zonage_ABC",
         "Zonage 123 ": "zonage_123",
     }
+
     famille = "Tout OLS"
     type_perimetre = "region"
     perimetre = None 
@@ -206,6 +249,11 @@
         {"code": None, "valeur": "INCONNU"},
     ]
 
+    def etiquette(typo):
+        for etiquette, code in TYPES.items():
+            if code == typo:
+                return etiquette
+        return typo
 
     def nom(categorie):
         for elt in CATEGORIES:
@@ -269,7 +317,7 @@
             con=conn_sqlite,
         )
         perimetres = df["perimetre"].to_list()
-        perimetre = perimetres[0]
+        perimetre = perimetres[1]
         selector = document.getElementById("selection-perimetre") 
         selector.innerHTML = ""
         for nom in perimetres:
@@ -297,7 +345,7 @@
         AND famille = '{famille}';""",
             con=conn_sqlite,
         )
-        titre = "Type de biens achetés par les organismes du logement social selon la région (période 2010-2020)"
+        titre = "Type de biens achetés par les OLS (période 2010-2020)"
         resultat = resultat.pivot(
             index="perimetre", columns="typo_ush", values="montant_transaction_acheteur"
         )
@@ -316,6 +364,7 @@
         )
         fig.update_layout(
           width=WIDTH_GRAPHE,
+          height=698,
         )
         return resultat, fig
         
@@ -357,6 +406,7 @@
         )
         fig.update_layout(
           width=WIDTH_GRAPHE,
+          height=698,
         )
         return resultat, fig
 
@@ -391,6 +441,7 @@
         )
         fig.update_layout(
           width=WIDTH_GRAPHE,
+          height=698,
         )
         return resultat, fig
 
@@ -433,6 +484,7 @@
         )
         fig.update_layout(
           width=WIDTH_GRAPHE,
+          height=698,
         )
         return resultat, fig
 
@@ -474,7 +526,7 @@
             secondary_y=False,
         )
         fig.update_layout(
-            barmode="group", yaxis={"title": "Montant (M€)"}, title=titre, width=WIDTH_GRAPHE*2
+            barmode="group", yaxis={"title": "Montant (M€)"}, title=titre, width=WIDTH_GRAPHE*2, height=698
         )
         return resultat, fig
 
@@ -520,6 +572,7 @@
             yaxis={"title": "Pourcentage", "range": [0, 100]},
             title=titre,
             width=WIDTH_GRAPHE*2,
+            height=698,
         )
         return resultat, fig
 
@@ -570,6 +623,7 @@
             font=dict(size=12),
             title="Principaux flux de transaction entre acteurs - période 2010-2020",
             width= WIDTH_GRAPHE*2,
+            height=698,
         )
         return resultat, fig
     ########################################################################
@@ -614,6 +668,18 @@
         event_typologie.addEventListener("change", change_typologie)
 
     def update_graph():
+        title_type_perimetre = document.getElementById("analyse1-tab")
+        title_type_perimetre.innerHTML = etiquette(type_perimetre)
+        title_type_perimetre = document.getElementById("title-type-perimetre")
+        title_type_perimetre.innerHTML = "Analyse par " + etiquette(type_perimetre)
+        title_perimetre = document.getElementById("analyse2-tab")
+        title_perimetre.innerHTML = perimetre 
+        title_perimetre = document.getElementById("title-perimetre")
+        title_perimetre.innerHTML = "Zoom sur " + perimetre 
+        title_typo = document.getElementById("analyse3-tab")
+        title_typo.innerHTML = typo 
+        title_typo = document.getElementById("title-typo")
+        title_typo.innerHTML = "Segment " + typo 
         resultat, fig = achats_ols(type_perimetre, famille)
         graphe1 = Element("graphe1")
         graphe1.clear()
